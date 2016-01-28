@@ -36,17 +36,21 @@ typedef enum ShowTitles
 @interface PieLayer : CALayer
 
 @property (nonatomic, strong, readonly) NSArray* values;
+
+-(void)updateValues:(NSArray*)addingNewValues animated:(BOOL)animated;
 - (void)addValues:(NSArray*)addingNewValues animated:(BOOL)animated;
 - (void)deleteValues:(NSArray*)valuesToDelete animated:(BOOL)animated;
 - (void)insertValues:(NSArray *)array atIndexes:(NSArray*)indexes animated:(BOOL)animated;
 
 @property (nonatomic, assign) float maxRadius;//default 100
 @property (nonatomic, assign) float minRadius;//default 0
+@property (nonatomic, assign) float containerInitalWidth; // default 170
+@property (nonatomic, assign) float containerInitalheight; // default 170
 @property (nonatomic, assign) float startAngle;//default 0
 @property (nonatomic, assign) float endAngle;//default 360
 @property (nonatomic, assign) float animationDuration;//default 0.6
 @property (nonatomic, assign) ShowTitle showTitles;//defaul ShowTitleNever
-
+@property (nonatomic, strong) UIFont *font;
 @property (nonatomic, copy) NSString*(^transformTitleBlock)(PieElement* val, float percent);
 
 - (void)setMaxRadius:(float)maxRadius minRadius:(float)minRadius animated:(BOOL)isAnimated;
@@ -55,6 +59,7 @@ typedef enum ShowTitles
 - (PieElement*)pieElemInPoint:(CGPoint)point;
 
 //you can redefine draw elements
-- (void)drawElement:(PieElement*)elem path:(CGPathRef)path context:(CGContextRef)ctx;
+- (void)drawElement:(PieElement*)elem context:(CGContextRef)ctx;
+- (void)resizeInRect:(CGRect)frame;
 
 @end

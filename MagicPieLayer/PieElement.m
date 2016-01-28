@@ -25,22 +25,13 @@
 //
 
 #import "PieElement.h"
-#import "PieLayer.h"
 
 NSString * const pieElementChangedNotificationIdentifier = @"PieElementChangedNotificationIdentifier";
 NSString * const pieElementAnimateChangesNotificationIdentifier = @"PieElementAnimateChangesNotificationIdentifier";
 
-void magicPie_runOnMainQueue(void (^block)(void)) {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
-
 static BOOL animateChanges;
 
-@interface PieLayer(hidden)
+@protocol PieLayerUpdateProtocol <NSObject>
 - (void)pieElementUpdate;
 - (void)pieElementWillAnimateUpdate;
 @end
@@ -49,7 +40,6 @@ static BOOL animateChanges;
 {
     NSMutableArray* containsInLayers;
 }
-@property (nonatomic, assign) float titleAlpha;
 @end
 
 @implementation PieElement
@@ -59,15 +49,18 @@ static BOOL animateChanges;
     PieElement* result = [self new];
     result->_val = val;
     result->_color = color;
-    return result;
-}
-
-- (id)init {
-    self = [super init];
-    if (self) {
-        _titleAlpha = 1.0;
+    result->_titleAlpha = 1;
+    result->_textColor = [UIColor whiteColor];
+    
+    if (val == 0)
+    {
+        result->_isZero = YES;
+//        result->_val = -1;
+        result->_color = [UIColor colorWithWhite:1 alpha:0.3];
     }
-    return self;
+    else
+        result->_isZero = NO;
+    return result;
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -85,8 +78,7 @@ static BOOL animateChanges;
     _centrOffset = elem.centrOffset;
     _showTitle = elem.showTitle;
     _titleAlpha = elem.titleAlpha;
-    _maxRadius = elem.maxRadius;
-    _minRadius = elem.minRadius;
+    _textColor = elem.textColor;
 }
 
 - (NSString*)description
@@ -96,45 +88,31 @@ static BOOL animateChanges;
 
 + (void)animateChanges:(void (^)())changesBlock
 {
-    magicPie_runOnMainQueue(^{
-        animateChanges = YES;
-        changesBlock();
-        animateChanges = NO;
-    });
+    animateChanges = YES;
+    changesBlock();
+    animateChanges = NO;
 }
 
-- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement pieLayer:(PieLayer *)layer arrayCapacity:(NSUInteger)count
+- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement arrayCapacity:(NSUInteger)count
 {
     if(count == 1) return @[anotherElement];
-    layer = layer.presentationLayer ?: layer;
     
     NSMutableArray* result = [NSMutableArray arrayWithCapacity:count];
     for (int i = 0; i < count; i++) {
         float v = i / (float)(count - 1);
         UIColor* newColor = [self colorBetweenColor1:self.color color2:anotherElement.color value:v];
         PieElement* newElem = [self copy];
-        newElem->_val = (anotherElement.val - self.val) * v + self.val;
-        newElem->_color = newColor;
-        newElem->_centrOffset = (anotherElement.centrOffset - self.centrOffset) * v + self.centrOffset;
+        newElem.val_ = (anotherElement.val - self.val) * v + self.val;
+        newElem.color_ = newColor;
+        [newElem setCentrOffset_: (anotherElement.centrOffset - self.centrOffset) * v + self.centrOffset];
         newElem.titleAlpha = (anotherElement.titleAlpha - _titleAlpha) * v + _titleAlpha;
         newElem.showTitle = self.showTitle;
-        
-        if (anotherElement.maxRadius || _maxRadius) {
-            float from = _maxRadius ? _maxRadius.floatValue : layer.maxRadius;
-            float to = anotherElement.maxRadius ? anotherElement.maxRadius.floatValue : layer.maxRadius;
-            newElem->_maxRadius = @((to - from) * v + from);
-        }
-        if (anotherElement.minRadius || _minRadius) {
-            float from = _minRadius ? _minRadius.floatValue : layer.minRadius;
-            float to = anotherElement.minRadius ? anotherElement.minRadius.floatValue : layer.minRadius;
-            newElem->_minRadius = @((to - from) * v + from);
-        }
         [result addObject:newElem];
     }
     return result;
 }
 
-- (void)addedToPieLayer:(PieLayer *)pieLayer
+- (void)addedToPieLayer:(id<PieLayerUpdateProtocol>)pieLayer
 {
     if(!containsInLayers)
         containsInLayers = [NSMutableArray new];
@@ -142,7 +120,7 @@ static BOOL animateChanges;
     [containsInLayers addObject:wraper];
 }
 
-- (void)removedFromLayer:(PieLayer *)pieLayer
+- (void)removedFromLayer:(id<PieLayerUpdateProtocol>)pieLayer
 {
     [containsInLayers removeObject:pieLayer];
 }
@@ -150,13 +128,13 @@ static BOOL animateChanges;
 - (void)notifyPerformForAnimation
 {
     for(NSValue* notRetainedVal in containsInLayers)
-        [((PieLayer *)notRetainedVal.nonretainedObjectValue) pieElementWillAnimateUpdate];
+        [notRetainedVal.nonretainedObjectValue pieElementWillAnimateUpdate];
 }
 
 - (void)notifyUpdated
 {
     for(NSValue* notRetainedVal in containsInLayers)
-        [((PieLayer *)notRetainedVal.nonretainedObjectValue) pieElementUpdate];
+        [notRetainedVal.nonretainedObjectValue pieElementUpdate];
 }
 
 #pragma mark - Setters
@@ -197,6 +175,24 @@ static BOOL animateChanges;
     }
 }
 
+-(void)setTextColor:(UIColor *)textColor
+{
+    if ([textColor isEqual:_textColor])
+        return ;
+    
+    if (animateChanges)
+        [self notifyPerformForAnimation];
+    
+    _textColor = textColor;
+    if (!animateChanges)
+        [self notifyUpdated];
+}
+
+- (void)setColor_:(UIColor *)color
+{
+    _color = color;
+}
+
 - (void)setCentrOffset:(float)centrOffset
 {
     if(_centrOffset == centrOffset)
@@ -210,6 +206,10 @@ static BOOL animateChanges;
         [self notifyUpdated];
     }
 }
+- (void)setCentrOffset_:(float)centrOffset
+{
+    _centrOffset = centrOffset;
+}
 
 - (void)setShowTitle:(BOOL)showTitle
 {
@@ -220,32 +220,6 @@ static BOOL animateChanges;
         [self notifyPerformForAnimation];
     }
     _showTitle = showTitle;
-    if(!animateChanges){
-        [self notifyUpdated];
-    }
-}
-
-- (void)setMaxRadius:(NSNumber *)maxRadius
-{
-    if([maxRadius isEqual:_maxRadius])
-        return;
-    if(animateChanges){
-        [self notifyPerformForAnimation];
-    }
-    _maxRadius = maxRadius;
-    if(!animateChanges){
-        [self notifyUpdated];
-    }
-}
-
-- (void)setMinRadius:(NSNumber *)minRadius
-{
-    if([minRadius isEqual:_minRadius])
-        return;
-    if(animateChanges){
-        [self notifyPerformForAnimation];
-    }
-    _minRadius = minRadius;
     if(!animateChanges){
         [self notifyUpdated];
     }

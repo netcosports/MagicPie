@@ -42,7 +42,9 @@ extern NSString * const pieElementAnimateChangesNotificationIdentifier;
 - (void)addedToPieLayer:(id)pieLayer;
 - (void)removedFromLayer:(id)pieLayer;
 - (void)setVal_:(float)val;
-- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement pieLayer:(PieLayer *)layer arrayCapacity:(NSUInteger)count;
+- (void)setColor_:(UIColor *)color;
+- (void)setCentrOffset_:(float)centrOffset;
+- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement arrayCapacity:(NSUInteger)count;
 @end
 
 static NSString * const _animationValuesKey = @"animationValues";
@@ -50,9 +52,9 @@ static NSString * const _animationValuesKey = @"animationValues";
 #pragma mark - PieLayer
 @interface PieLayer ()
 {
+    BOOL isResized;
     BOOL _isNotCopyForAnimation;
 }
-@property (nonatomic, strong) UIFont* font;
 @property (nonatomic, strong, readwrite) NSArray* values;
 // present while performing animations
 @property (nonatomic, strong) NSArray* presentValues;
@@ -65,7 +67,7 @@ static NSString * const _animationValuesKey = @"animationValues";
 @end
 
 @implementation PieLayer
-@dynamic values, presentValues, deletingIndexes, maxRadius, minRadius, font, transformTitleBlock, startAngle, endAngle, isFakeAngleAnimation, showTitles;
+@dynamic values, presentValues, deletingIndexes, maxRadius, minRadius, transformTitleBlock, startAngle, endAngle, isFakeAngleAnimation, showTitles;
 @synthesize animationDuration, animationBeginState, animationEndState, animationDeletingIndexes;
 
 #pragma mark - Init
@@ -99,13 +101,16 @@ static NSString * const _animationValuesKey = @"animationValues";
 - (void)setup
 {
     _isNotCopyForAnimation = YES;
+    isResized = NO;
     self.maxRadius = 100;
     self.minRadius = 0;
+    self.containerInitalWidth = 170;
+    self.containerInitalheight = 170;
     self.startAngle = 0.0;
     self.endAngle = 360.0;
     self.animationDuration = 0.6;
     self.showTitles = ShowTitlesNever;
-    self.font = [UIFont systemFontOfSize:15];
+    self.font = [UIFont systemFontOfSize:18];
     if ([self respondsToSelector:@selector(setContentsScale:)]){
         self.contentsScale = [[UIScreen mainScreen] scale];
     }
@@ -169,6 +174,7 @@ static NSString * const _animationValuesKey = @"animationValues";
     if(!animated || ![self performDelayedAnimation]){
         for(PieElement* elem in array){
             elem.titleAlpha = 1.0;
+            elem.font = self.font;
         }
         [self removeAnimationForKey:_animationValuesKey];
         self.values = [NSArray arrayWithArray:newValues];
@@ -222,6 +228,13 @@ static NSString * const _animationValuesKey = @"animationValues";
     [animationDeletingIndexes sortUsingSelector:@selector(compare:)];
 }
 
+-(void)updateValues:(NSArray*)updatingNewValues animated:(BOOL)animated
+{
+    if (self.values && [self.values count] > 0)
+        [self deleteValues:self.values animated:animated];
+    [self addValues:updatingNewValues animated:animated];
+}
+
 - (void)pieElementUpdate
 {
     [self setNeedsDisplay];
@@ -255,8 +268,10 @@ static NSString * const _animationValuesKey = @"animationValues";
     float toSum = [[toValues valueForKeyPath:@"@sum.val"] floatValue];
     if(fromSum <= 0 || toSum <= 0){
         [self animateStartAngleEndAngleFillUp:(fromSum==0) values:fromValues timingFunction:timingFunction];
-//        return;
-    } else if(self.isFakeAngleAnimation){
+        return;
+    }
+    
+    if(self.isFakeAngleAnimation){
         [self animateFromStartAngle:[self.presentationLayer startAngle]
                        toStartAngle:self.startAngle
                        fromEndAngle:[self.presentationLayer endAngle]
@@ -271,7 +286,7 @@ static NSString * const _animationValuesKey = @"animationValues";
         [animationKeys addObject:[NSMutableArray new]];
     }
     for(int valNum = 0; valNum < fromValues.count; valNum++){
-        NSArray* changeValueAnimation = [fromValues[valNum] animationValuesToPieElement:toValues[valNum] pieLayer:self arrayCapacity:keysCount];
+        NSArray* changeValueAnimation = [fromValues[valNum] animationValuesToPieElement:toValues[valNum] arrayCapacity:keysCount];
 
         for(int keyNum = 0; keyNum < keysCount; keyNum++){
             [animationKeys[keyNum] addObject:changeValueAnimation[keyNum]];
@@ -349,8 +364,8 @@ static NSString * const _animationValuesKey = @"animationValues";
     CAAnimationGroup* runingAnimation = (CAAnimationGroup*)[self animationForKey:@"animationMaxMinRadius"];
     if(runingAnimation){
         [self removeAnimationForKey:@"animationMaxMinRadius"];
-        self.maxRadius = [((PieLayer *)self.presentationLayer) maxRadius];
-        self.minRadius = [((PieLayer *)self.presentationLayer) minRadius];
+        self.maxRadius = [self.presentationLayer maxRadius];
+        self.minRadius = [self.presentationLayer minRadius];
     }
     
     NSString* timingFunction = runingAnimation? kCAMediaTimingFunctionEaseOut : kCAMediaTimingFunctionEaseInEaseOut;
@@ -453,8 +468,8 @@ static NSString * const _animationValuesKey = @"animationValues";
         return;
     CGPoint centr = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
     float sum = [[values valueForKeyPath:@"@sum.val"] floatValue];
-    if(sum <= 0)
-        return;
+//    if(sum == 0)
+//        return;
     
     CGContextSaveGState(ctx);
     CGContextTranslateCTM(ctx, 0, self.bounds.size.height);
@@ -465,25 +480,28 @@ static NSString * const _animationValuesKey = @"animationValues";
     BOOL clockWise = self.startAngle > self.endAngle;
     
     for(PieElement* elem in values){
-        float minRad = elem.minRadius ? elem.minRadius.floatValue : self.minRadius;
-        float maxRad = elem.maxRadius ? elem.maxRadius.floatValue : self.maxRadius;
-        
-        float angleEnd = angleStart + angleInterval * elem.val / sum;
+        float angleEnd = 0;
+        if (sum > 0)
+            angleEnd = angleStart + angleInterval * elem.val / sum;
+        else
+            angleEnd = 360;
         float centrAngle = (angleEnd + angleStart) * 0.5;
         CGPoint centrWithOffset = elem.centrOffset > 0? CGPointMake(cosf(centrAngle) * elem.centrOffset + centr.x, sinf(centrAngle) * elem.centrOffset + centr.y) : centr;
-        CGPoint minRadiusStart = CGPointMake(centrWithOffset.x + minRad*cosf(angleStart), centrWithOffset.y + minRad*sinf(angleStart));
-        CGPoint maxRadiusEnd = CGPointMake(centrWithOffset.x + maxRad*cosf(angleEnd), centrWithOffset.y + maxRad*sinf(angleEnd));
+        CGPoint minRadiusStart = CGPointMake(centrWithOffset.x + self.minRadius*cosf(angleStart), centrWithOffset.y + self.minRadius*sinf(angleStart));
+        CGPoint maxRadiusEnd = CGPointMake(centrWithOffset.x + self.maxRadius*cosf(angleEnd), centrWithOffset.y + self.maxRadius*sinf(angleEnd));
         
-        CGMutablePathRef path = CGPathCreateMutable();
+        CGContextSaveGState(ctx);
         
-        CGPathMoveToPoint(path, nil, minRadiusStart.x, minRadiusStart.y);
-        CGPathAddArc(path, nil, centrWithOffset.x, centrWithOffset.y, minRad, angleStart, angleEnd, clockWise);
-        CGPathAddLineToPoint(path, nil, maxRadiusEnd.x, maxRadiusEnd.y);
-        CGPathAddArc(path, nil, centrWithOffset.x, centrWithOffset.y, maxRad, angleEnd, angleStart, !clockWise);
-        CGPathCloseSubpath(path);
+        CGContextBeginPath(ctx);
+        CGContextMoveToPoint(ctx, minRadiusStart.x, minRadiusStart.y);
+        CGContextAddArc(ctx, centrWithOffset.x, centrWithOffset.y, self.minRadius, angleStart, angleEnd, clockWise);
+        CGContextAddLineToPoint(ctx, maxRadiusEnd.x, maxRadiusEnd.y);
+        CGContextAddArc(ctx, centrWithOffset.x, centrWithOffset.y, self.maxRadius, angleEnd, angleStart, !clockWise);
+        CGContextClosePath(ctx);
+        CGContextClip(ctx);
         
-        [self drawElement:elem path:path context:ctx];
-        CGPathRelease(path);
+        [self drawElement:elem context:ctx];
+        CGContextRestoreGState(ctx);
         
         angleStart = angleEnd;
     }
@@ -493,12 +511,11 @@ static NSString * const _animationValuesKey = @"animationValues";
         [self drawValuesText:ctx sumValues:sum];
 }
 
-- (void)drawElement:(PieElement*)elem path:(CGPathRef)path context:(CGContextRef)ctx
+- (void)drawElement:(PieElement*)elem context:(CGContextRef)ctx
 {
     if(elem.color){
         CGContextSetFillColorWithColor(ctx, [elem.color CGColor]);
-        CGContextAddPath(ctx, path);
-        CGContextFillPath(ctx);
+        CGContextFillRect(ctx, self.bounds);
     }
 }
 
@@ -506,19 +523,35 @@ static NSString * const _animationValuesKey = @"animationValues";
 - (void)drawValuesText:(CGContextRef)ctx sumValues:(float)sum
 {
     NSArray *values = self.presentValues?: self.values;
-    CGContextSetShadowWithColor(ctx, CGSizeMake(0,1), 3, [UIColor blackColor].CGColor);
+    if ([values count] == 0 && self.values)
+        values = self.values;
+//    CGContextSetShadowWithColor(ctx, CGSizeMake(0,1), 3, [UIColor blackColor].CGColor);
     
     float angleStart = self.startAngle * M_PI / 180.0;
     float angleInterval = (self.endAngle - self.startAngle) * M_PI / 180.0;
-    
-    for(PieElement* elem in values){
-        float angleEnd = angleStart + angleInterval * elem.val / sum;
+
+    NSInteger i = 0;
+    for (PieElement* elem in values)
+    {
+        float angleEnd;
+        if (sum != 0)
+            angleEnd = angleStart + angleInterval * elem.val / sum;
+        else
+            angleEnd = 360 / [values count] * i + 2;
         BOOL showTitle = elem.showTitle || self.showTitles == ShowTitlesAlways;
-        if(!showTitle || elem.titleAlpha <= 0.01){
+        
+        if(!showTitle || elem.titleAlpha <= 0.01)
+        {
             angleStart = angleEnd;
             continue;
         }
-        UIColor* color = elem.color?: [UIColor blackColor];
+        UIColor* color = nil;
+        
+        if (elem.textColor)
+            color = elem.textColor;
+        else
+            color = [UIColor whiteColor];
+        
         color = [color colorWithAlphaComponent:elem.titleAlpha];
         CGContextSetFillColorWithColor(ctx, color.CGColor);
         
@@ -526,17 +559,35 @@ static NSString * const _animationValuesKey = @"animationValues";
         float percent = 0.0;
         if(sum != 0.0)
             percent = 100.0 * elem.val / sum;
-        NSString* text = self.transformTitleBlock? self.transformTitleBlock(elem, percent) : [NSString stringWithFormat:@"%.2f", elem.val];
-        float maxRadius = elem.maxRadius ? elem.maxRadius.floatValue : self.maxRadius;
-        float radius = maxRadius + elem.centrOffset;
-        [self drawText:text angle:-angle radius:radius color:color context:ctx];
         
+        if (elem.isZero == YES)
+        {
+            PieElement *newElement = [PieElement pieElementWithValue:0 color:elem.color];
+            newElement.val = 0;
+            newElement.font = elem.font;
+            
+            NSString* text = self.transformTitleBlock? self.transformTitleBlock(newElement, 0) : [NSString stringWithFormat:@"%.2f", newElement.val];
+            
+            float radius = self.maxRadius + elem.centrOffset;
+            [self drawText:text withColor:newElement.color andFont:newElement.font onAngle:-angle withRadius:radius+5 InContext:ctx];
+        }
+        else
+        {
+            NSString* text = self.transformTitleBlock? self.transformTitleBlock(elem, percent) : [NSString stringWithFormat:@"%.2f", elem.val];
+            float radius = self.maxRadius + elem.centrOffset;
+            [self drawText:text withColor:color andFont:elem.font onAngle:-angle withRadius:radius+5 InContext:ctx];
+
+        }
         angleStart = angleEnd;
+        i++;
     }
 }
 
-- (void)drawText:(NSString*)text angle:(float)angle radius:(float)radius color:(UIColor *)textColor context:(CGContextRef)ctx
+- (void)drawText:(NSString*)text withColor:(UIColor *)textColor andFont:(UIFont *)textFont onAngle:(float)angle withRadius:(float)radius InContext:(CGContextRef)ctx
 {
+    if (!textFont)
+        textFont = [UIFont systemFontOfSize:15];
+    
     while (angle < -M_PI_4) {
         angle += M_PI*2;
     }
@@ -544,21 +595,23 @@ static NSString * const _animationValuesKey = @"animationValues";
         angle -= M_PI*2;
     }
 #if (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
-    CGSize textSize = [text sizeWithFont:self.font];
+    CGSize textSize = [text sizeWithFont:textFont];
 #else
-    CGSize textSize = [text sizeWithAttributes:@{NSFontAttributeName:self.font}];
+    CGSize textSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
 #endif
     CGPoint anchorPoint;
     //clockwise
-    if(angle >= -M_PI_4 && angle < M_PI_4){
+    if (angle >= -M_PI_4 && angle < M_PI_4)
         anchorPoint = CGPointMake(0, easeInOut((M_PI_4-angle) / M_PI_2));
-    } else if(angle >= M_PI_4 && angle < M_PI_2+M_PI_4){
+
+    else if(angle >= M_PI_4 && angle < M_PI_2+M_PI_4)
         anchorPoint = CGPointMake(easeInOut((angle-M_PI_4) / M_PI_2), 0);
-    } else if(angle >= M_PI_2+M_PI_4 && angle < M_PI+M_PI_4){
+    
+    else if(angle >= M_PI_2+M_PI_4 && angle < M_PI+M_PI_4)
         anchorPoint = CGPointMake(1, easeInOut((angle - (M_PI_2+M_PI_4)) / M_PI_2));
-    } else {
+    
+    else
         anchorPoint = CGPointMake(easeInOut(((2*M_PI - M_PI_4) - angle) / M_PI_2), 1);
-    }
     
     CGPoint center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
     CGPoint pos = CGPointMake(center.x + radius*cosf(angle), center.y + radius*sinf(angle));
@@ -568,10 +621,11 @@ static NSString * const _animationValuesKey = @"animationValues";
                               textSize.width,
                               textSize.height);
     UIGraphicsPushContext(ctx);
+
 #if (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
-    [text drawInRect:frame withFont:self.font];
+    [text drawInRect:frame withFont:textFont];
 #else
-    [text drawInRect:frame withAttributes:@{NSFontAttributeName:self.font, NSForegroundColorAttributeName:textColor}];
+    [text drawInRect:frame withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName : textColor}];
 #endif
     
     UIGraphicsPopContext();
@@ -599,27 +653,22 @@ static NSString * const _animationValuesKey = @"animationValues";
     float angleStart = startAngle * M_PI / 180.0;
     float angleInterval = (endAngle - startAngle) * M_PI / 180.0;
     int realIdx = 0, presentIdx = 0;
-    BOOL clockWise = self.startAngle > self.endAngle;
-    
     for(PieElement* elem in presentingLayer.values){
         if([presentingLayer.deletingIndexes containsObject:@(presentIdx)]){
             presentIdx++;
             continue;
         }
-        
-        float elemMinRad = elem.minRadius ? elem.minRadius.floatValue : minRadius;
-        float elemMaxRad = elem.maxRadius ? elem.maxRadius.floatValue : maxRadius;
         float angleEnd = angleStart + angleInterval * elem.val / sum;
         float centrAngle = (angleEnd + angleStart) * 0.5;
         CGPoint centrWithOffset = elem.centrOffset > 0? CGPointMake(cosf(centrAngle) * elem.centrOffset + centr.x, sinf(centrAngle) * elem.centrOffset + centr.y) : centr;
-        CGPoint minRadiusStart = CGPointMake(centrWithOffset.x + elemMinRad*cosf(angleStart), centrWithOffset.y + elemMinRad*sinf(angleStart));
-        CGPoint maxRadiusEnd = CGPointMake(centrWithOffset.x + elemMaxRad*cosf(angleEnd), centrWithOffset.y + elemMaxRad*sinf(angleEnd));
+        CGPoint minRadiusStart = CGPointMake(centrWithOffset.x + minRadius*cosf(angleStart), centrWithOffset.y + minRadius*sinf(angleStart));
+        CGPoint maxRadiusEnd = CGPointMake(centrWithOffset.x + maxRadius*cosf(angleEnd), centrWithOffset.y + maxRadius*sinf(angleEnd));
         
         CGMutablePathRef path = CGPathCreateMutable();
         CGPathMoveToPoint(path, nil, minRadiusStart.x, minRadiusStart.y);
-        CGPathAddArc(path, nil, centrWithOffset.x, centrWithOffset.y, elemMinRad, angleStart, angleEnd, clockWise);
+        CGPathAddArc(path, nil, centrWithOffset.x, centrWithOffset.y, minRadius, angleStart, angleEnd, NO);
         CGPathAddLineToPoint(path, nil, maxRadiusEnd.x, maxRadiusEnd.y);
-        CGPathAddArc(path, nil, centrWithOffset.x, centrWithOffset.y, elemMaxRad, angleEnd, angleStart, !clockWise);
+        CGPathAddArc(path, nil, centrWithOffset.x, centrWithOffset.y, maxRadius, angleEnd, angleStart, YES);
         CGPathCloseSubpath(path);
         
         BOOL containsPoint = CGPathContainsPoint(path, nil, point, NO);
@@ -634,6 +683,30 @@ static NSString * const _animationValuesKey = @"animationValues";
     }
 
     return nil;
+}
+
+- (void)resizeInRect:(CGRect)frame
+{
+    if (isResized)
+        return;
+    NSInteger minSize;
+    NSInteger defaultSize;
+
+    if (frame.size.width < frame.size.height)
+    {
+        minSize = frame.size.width;
+        defaultSize = self.containerInitalWidth;
+    }
+    else
+    {
+        minSize = frame.size.height;
+        defaultSize = self.containerInitalheight;
+    }
+    self.minRadius = self.minRadius * minSize / defaultSize;
+    self.maxRadius = self.maxRadius * minSize / defaultSize;
+    CGFloat fontSize = self.font.pointSize * minSize / defaultSize;
+    self.font = [self.font fontWithSize:fontSize - 1];
+    isResized = YES;
 }
 
 - (void)dealloc
