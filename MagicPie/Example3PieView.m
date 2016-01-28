@@ -20,9 +20,12 @@
     MeterTable* meterTable;
 }
 @property(nonatomic,readonly,retain) Example3PieLayer *layer;
+
 @end
 
 @implementation Example3PieView
+
+@dynamic layer;
 
 + (Class)layerClass
 {

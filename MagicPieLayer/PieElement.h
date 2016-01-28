@@ -25,7 +25,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
 @interface PieElement : NSObject <NSCopying>
 
@@ -33,10 +32,15 @@
 
 + (void)animateChanges:(void(^)())changesBlock;
 
-@property (nonatomic, assign) float val;
-@property (nonatomic, strong) UIColor* color;
-@property (nonatomic, assign) float centrOffset;
-@property (nonatomic, assign) BOOL showTitle;//default NO
+@property (nonatomic, assign) BOOL      isZero;
+@property (nonatomic, assign) BOOL      showTitle;//default NO
+@property (nonatomic, assign) float     centrOffset;
+@property (nonatomic, assign) float     val;
+
+@property (nonatomic, assign) float     titleAlpha;
+@property (nonatomic, strong) UIColor   *color;
+@property (nonatomic, strong) UIColor   *textColor;
+@property (nonatomic, strong) UIFont    *font;
 
 @property (nonatomic, strong) NSNumber *maxRadius; //default nil, use max/min radius of layer
 @property (nonatomic, strong) NSNumber *minRadius;

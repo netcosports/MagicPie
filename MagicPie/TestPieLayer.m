@@ -37,7 +37,7 @@ typedef enum PieAction
         return;
     } else {
         count--;
-        [timerCountStr setString:[NSString stringWithFormat:@"%lu", count]];
+        [timerCountStr setString:[NSString stringWithFormat:@"%lu", (unsigned long)count]];
     }
     
     void(^actionBlock)(NSString* actionDesc) = timer.userInfo[@"actionBlock"];
@@ -46,7 +46,7 @@ typedef enum PieAction
         NSUInteger valuesCount = pieLayer.values.count;
         NSString* actionDesc = [self runRandomActionWithPie:pieLayer];
         if(actionDesc){
-            actionDesc = [NSString stringWithFormat:@"Curr values count %lu. %@", valuesCount, actionDesc];
+            actionDesc = [NSString stringWithFormat:@"Curr values count %lu. %@", (unsigned long)valuesCount, actionDesc];
             actionBlock(actionDesc);
         }
     }else
@@ -62,7 +62,7 @@ typedef enum PieAction
             return nil;
         
         [pieLayer addValues:arr animated:YES];
-        return [NSString stringWithFormat:@"Add %lu elements", arr.count];
+        return [NSString stringWithFormat:@"Add %lu elements", (unsigned long)arr.count];
     } else if(action == PieActionInsert){
         NSArray* arr = [self randArr];
         if(arr.count == 0)
@@ -77,7 +77,7 @@ typedef enum PieAction
                 count++;
         }
         [pieLayer insertValues:arr atIndexes:indxArr animated:YES];
-        return [NSString stringWithFormat:@"Insert %lu elements at indexes: %@", arr.count, [self arrDesc:indxArr]];
+        return [NSString stringWithFormat:@"Insert %lu elements at indexes: %@", (unsigned long)arr.count, [self arrDesc:indxArr]];
     } else if(action == PieActionDelete) {
         if(pieLayer.values.count == 0)
             return nil;
