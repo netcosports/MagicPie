@@ -7,21 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A86AF37B1B09099600A5C975 /* PieView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86AF37A1B09099600A5C975 /* PieView2.swift */; };
+		644CFE231C5A1AB50086D2A9 /* Example3PieLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A8BB7717188B9D2E00A90439 /* Example3PieLayer.m */; };
+		644CFE251C5A1F610086D2A9 /* Example2PieView.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA967187205AA001AEF6A /* Example2PieView.m */; };
+		644CFE261C5A22910086D2A9 /* PieView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86AF37A1B09099600A5C975 /* PieView2.swift */; };
+		644CFE271C5A22D70086D2A9 /* Example2SwiftController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86AF37E1B091C7000A5C975 /* Example2SwiftController.swift */; };
+		644CFE281C5A24570086D2A9 /* Example4Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8878AC31A9073F5006ED249 /* Example4Controller.swift */; };
 		A86AF37D1B091C3300A5C975 /* PieElement2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86AF37C1B091C3300A5C975 /* PieElement2.swift */; };
-		A86AF37F1B091C7000A5C975 /* Example2SwiftController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86AF37E1B091C7000A5C975 /* Example2SwiftController.swift */; };
 		A86AF3811B0920FB00A5C975 /* Example2SwiftController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A86AF3801B0920FB00A5C975 /* Example2SwiftController.xib */; };
-		A8878AC41A9073F5006ED249 /* Example4Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8878AC31A9073F5006ED249 /* Example4Controller.swift */; };
 		A8AFA913186B6138001AEF6A /* NSArray+descValues.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA912186B6138001AEF6A /* NSArray+descValues.m */; };
 		A8AFA95E186DFF70001AEF6A /* NSMutableArray+pieEx.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA95D186DFF70001AEF6A /* NSMutableArray+pieEx.m */; };
 		A8AFA9631871FEB4001AEF6A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA9611871FEB4001AEF6A /* ViewController.m */; };
 		A8AFA9641871FEB4001AEF6A /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A8AFA9621871FEB4001AEF6A /* ViewController.xib */; };
-		A8AFA968187205AA001AEF6A /* Example2PieView.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA967187205AA001AEF6A /* Example2PieView.m */; };
 		A8AFA96F1872081D001AEF6A /* Example2Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA96D1872081D001AEF6A /* Example2Controller.m */; };
 		A8AFA9701872081D001AEF6A /* Example2Controller.xib in Resources */ = {isa = PBXBuildFile; fileRef = A8AFA96E1872081D001AEF6A /* Example2Controller.xib */; };
 		A8AFA97318721011001AEF6A /* MyPieElement.m in Sources */ = {isa = PBXBuildFile; fileRef = A8AFA97218721011001AEF6A /* MyPieElement.m */; };
 		A8B77B0A1A90A75F00F394CE /* Example4Controller.xib in Resources */ = {isa = PBXBuildFile; fileRef = A8B77B091A90A75F00F394CE /* Example4Controller.xib */; };
-		A8BB7718188B9D2E00A90439 /* Example3PieLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A8BB7717188B9D2E00A90439 /* Example3PieLayer.m */; };
 		A8C814B9188B00F300D71B88 /* Example3Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C814B7188B00F300D71B88 /* Example3Controller.m */; };
 		A8C814BA188B00F300D71B88 /* Example3Controller.xib in Resources */ = {isa = PBXBuildFile; fileRef = A8C814B8188B00F300D71B88 /* Example3Controller.xib */; };
 		A8C814C2188B0BDD00D71B88 /* sample.m4a in Resources */ = {isa = PBXBuildFile; fileRef = A8C814C1188B0BDD00D71B88 /* sample.m4a */; };
@@ -372,11 +372,12 @@
 		BD0CFE4C17F94CC60038FBC1 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastSwiftUpdateCheck = 0720;
+				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = "Alexandr Corporation";
 				TargetAttributes = {
 					BD0CFE5317F94CC60038FBC1 = {
-						DevelopmentTeam = 6D63584WAD;
+						DevelopmentTeam = JPS45PPV79;
 					};
 					BD0CFE7417F94CC60038FBC1 = {
 						TestTargetID = BD0CFE5317F94CC60038FBC1;
@@ -439,22 +440,22 @@
 				A8AFA97318721011001AEF6A /* MyPieElement.m in Sources */,
 				A8AFA913186B6138001AEF6A /* NSArray+descValues.m in Sources */,
 				A8AFA96F1872081D001AEF6A /* Example2Controller.m in Sources */,
+				644CFE251C5A1F610086D2A9 /* Example2PieView.m in Sources */,
 				BD0CFE6E17F94CC60038FBC1 /* Example1Controller.m in Sources */,
-				A86AF37F1B091C7000A5C975 /* Example2SwiftController.swift in Sources */,
 				A8C814C5188B0C8700D71B88 /* Example3PieView.m in Sources */,
+				644CFE261C5A22910086D2A9 /* PieView2.swift in Sources */,
 				A8AFA9631871FEB4001AEF6A /* ViewController.m in Sources */,
-				A86AF37B1B09099600A5C975 /* PieView2.swift in Sources */,
 				BD0CFE6817F94CC60038FBC1 /* AppDelegate.m in Sources */,
+				644CFE271C5A22D70086D2A9 /* Example2SwiftController.swift in Sources */,
 				BD0CFEEC17FE98150038FBC1 /* TestPieLayer.m in Sources */,
 				BD092F0C1806D09000E1C0E6 /* Example1PieView.m in Sources */,
-				A8878AC41A9073F5006ED249 /* Example4Controller.swift in Sources */,
+				644CFE281C5A24570086D2A9 /* Example4Controller.swift in Sources */,
 				A8C814CC188B175200D71B88 /* MetrtTable.m in Sources */,
 				A86AF37D1B091C3300A5C975 /* PieElement2.swift in Sources */,
 				A8C814B9188B00F300D71B88 /* Example3Controller.m in Sources */,
 				BDCDD2B318268B8E0006C638 /* PieElement.m in Sources */,
-				A8AFA968187205AA001AEF6A /* Example2PieView.m in Sources */,
-				A8BB7718188B9D2E00A90439 /* Example3PieLayer.m in Sources */,
 				BD0CFE6417F94CC60038FBC1 /* main.m in Sources */,
+				644CFE231C5A1AB50086D2A9 /* Example3PieLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,7 +501,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -515,6 +515,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -539,7 +540,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -583,6 +583,7 @@
 				INFOPLIST_FILE = "MagicPie/MagicPie-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.bars-office.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MagicPie/MagicPie-Bridging-Header.h";
@@ -606,6 +607,7 @@
 				INFOPLIST_FILE = "MagicPie/MagicPie-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.bars-office.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MagicPie/MagicPie-Bridging-Header.h";
@@ -629,6 +631,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "MagicPieTests/MagicPieTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.bars-office.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
@@ -647,6 +650,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MagicPie/MagicPie-Prefix.pch";
 				INFOPLIST_FILE = "MagicPieTests/MagicPieTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.bars-office.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;

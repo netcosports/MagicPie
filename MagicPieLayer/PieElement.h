@@ -42,4 +42,7 @@
 @property (nonatomic, strong) UIColor   *textColor;
 @property (nonatomic, strong) UIFont    *font;
 
+@property (nonatomic, strong) NSNumber *maxRadius; //default nil, use max/min radius of layer
+@property (nonatomic, strong) NSNumber *minRadius;
+
 @end

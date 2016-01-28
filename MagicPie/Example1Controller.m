@@ -42,7 +42,7 @@
 
 - (IBAction)backPressed:(id)sender
 {
-    [self dismissModalViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)addPressed:(id)sender

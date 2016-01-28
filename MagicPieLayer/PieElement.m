@@ -25,6 +25,7 @@
 //
 
 #import "PieElement.h"
+#import "PieLayer.h"
 
 NSString * const pieElementChangedNotificationIdentifier = @"PieElementChangedNotificationIdentifier";
 NSString * const pieElementAnimateChangesNotificationIdentifier = @"PieElementAnimateChangesNotificationIdentifier";
@@ -79,6 +80,8 @@ static BOOL animateChanges;
     _showTitle = elem.showTitle;
     _titleAlpha = elem.titleAlpha;
     _textColor = elem.textColor;
+    _maxRadius = elem.maxRadius;
+    _minRadius = elem.minRadius;
 }
 
 - (NSString*)description
@@ -93,9 +96,10 @@ static BOOL animateChanges;
     animateChanges = NO;
 }
 
-- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement arrayCapacity:(NSUInteger)count
+- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement pieLayer:(PieLayer *)layer arrayCapacity:(NSUInteger)count
 {
     if(count == 1) return @[anotherElement];
+    layer = layer.presentationLayer ?: layer;
     
     NSMutableArray* result = [NSMutableArray arrayWithCapacity:count];
     for (int i = 0; i < count; i++) {
@@ -107,6 +111,17 @@ static BOOL animateChanges;
         [newElem setCentrOffset_: (anotherElement.centrOffset - self.centrOffset) * v + self.centrOffset];
         newElem.titleAlpha = (anotherElement.titleAlpha - _titleAlpha) * v + _titleAlpha;
         newElem.showTitle = self.showTitle;
+        
+        if (anotherElement.maxRadius || _maxRadius) {
+            float from = _maxRadius ? _maxRadius.floatValue : layer.maxRadius;
+            float to = anotherElement.maxRadius ? anotherElement.maxRadius.floatValue : layer.maxRadius;
+            newElem->_maxRadius = @((to - from) * v + from);
+        }
+        if (anotherElement.minRadius || _minRadius) {
+            float from = _minRadius ? _minRadius.floatValue : layer.minRadius;
+            float to = anotherElement.minRadius ? anotherElement.minRadius.floatValue : layer.minRadius;
+            newElem->_minRadius = @((to - from) * v + from);
+        }
         [result addObject:newElem];
     }
     return result;
@@ -220,6 +235,32 @@ static BOOL animateChanges;
         [self notifyPerformForAnimation];
     }
     _showTitle = showTitle;
+    if(!animateChanges){
+        [self notifyUpdated];
+    }
+}
+
+- (void)setMaxRadius:(NSNumber *)maxRadius
+{
+    if([maxRadius isEqual:_maxRadius])
+        return;
+    if(animateChanges){
+        [self notifyPerformForAnimation];
+    }
+    _maxRadius = maxRadius;
+    if(!animateChanges){
+        [self notifyUpdated];
+    }
+}
+
+- (void)setMinRadius:(NSNumber *)minRadius
+{
+    if([minRadius isEqual:_minRadius])
+        return;
+    if(animateChanges){
+        [self notifyPerformForAnimation];
+    }
+    _minRadius = minRadius;
     if(!animateChanges){
         [self notifyUpdated];
     }

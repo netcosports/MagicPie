@@ -14,7 +14,7 @@ class Example2SwiftController: UIViewController {
         super.init(nibName: "Example2SwiftController", bundle: nil)
     }
 
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     

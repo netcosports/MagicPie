@@ -48,7 +48,7 @@ class PieView2: UIView {
         let pos = tap.locationInView(tap.view)
         
         if let tappedElem = pieLayer.pieElemInPoint(pos) {
-            let newIdx = find(pieLayer.values as! [PieElement], tappedElem)
+            let newIdx = pieLayer.values.indexOf({$0 as! PieElement == tappedElem})
             if newIdx == selectedIdx {
                 selectedIdx = nil
             } else {
@@ -61,7 +61,7 @@ class PieView2: UIView {
     
     private func animateChanges() {
         PieElement.animateChanges {
-            for (idx, obj) in enumerate(self.pieLayer.values) {
+            for (idx, obj) in self.pieLayer.values.enumerate() {
                 let elem = obj as! PieElement
                 elem.centrOffset = idx == self.selectedIdx ? 20 : 0
             }

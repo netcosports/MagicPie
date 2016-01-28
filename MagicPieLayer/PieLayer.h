@@ -24,6 +24,7 @@
 //
 
 #import <QuartzCore/QuartzCore.h>
+    #import <UIKit/UIKit.h>
 
 typedef enum ShowTitles
 {
@@ -60,6 +61,8 @@ typedef enum ShowTitles
 
 //you can redefine draw elements
 - (void)drawElement:(PieElement*)elem context:(CGContextRef)ctx;
+- (void)drawElement:(PieElement*)elem path:(CGPathRef)path context:(CGContextRef)ctx;
+
 - (void)resizeInRect:(CGRect)frame;
 
 @end

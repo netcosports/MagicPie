@@ -44,7 +44,7 @@ extern NSString * const pieElementAnimateChangesNotificationIdentifier;
 - (void)setVal_:(float)val;
 - (void)setColor_:(UIColor *)color;
 - (void)setCentrOffset_:(float)centrOffset;
-- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement arrayCapacity:(NSUInteger)count;
+- (NSArray*)animationValuesToPieElement:(PieElement*)anotherElement pieLayer:(PieLayer *)layer arrayCapacity:(NSUInteger)count;
 @end
 
 static NSString * const _animationValuesKey = @"animationValues";
@@ -286,7 +286,7 @@ static NSString * const _animationValuesKey = @"animationValues";
         [animationKeys addObject:[NSMutableArray new]];
     }
     for(int valNum = 0; valNum < fromValues.count; valNum++){
-        NSArray* changeValueAnimation = [fromValues[valNum] animationValuesToPieElement:toValues[valNum] arrayCapacity:keysCount];
+        NSArray* changeValueAnimation = [fromValues[valNum] animationValuesToPieElement:toValues[valNum] pieLayer:self arrayCapacity:keysCount];
 
         for(int keyNum = 0; keyNum < keysCount; keyNum++){
             [animationKeys[keyNum] addObject:changeValueAnimation[keyNum]];
@@ -364,8 +364,8 @@ static NSString * const _animationValuesKey = @"animationValues";
     CAAnimationGroup* runingAnimation = (CAAnimationGroup*)[self animationForKey:@"animationMaxMinRadius"];
     if(runingAnimation){
         [self removeAnimationForKey:@"animationMaxMinRadius"];
-        self.maxRadius = [self.presentationLayer maxRadius];
-        self.minRadius = [self.presentationLayer minRadius];
+        self.maxRadius = [(PieLayer*)self.presentationLayer maxRadius];
+        self.minRadius = [(PieLayer*)self.presentationLayer minRadius];
     }
     
     NSString* timingFunction = runingAnimation? kCAMediaTimingFunctionEaseOut : kCAMediaTimingFunctionEaseInEaseOut;
@@ -518,6 +518,16 @@ static NSString * const _animationValuesKey = @"animationValues";
         CGContextFillRect(ctx, self.bounds);
     }
 }
+
+- (void)drawElement:(PieElement*)elem path:(CGPathRef)path context:(CGContextRef)ctx
+{
+    if(elem.color){
+        CGContextSetFillColorWithColor(ctx, [elem.color CGColor]);
+        CGContextAddPath(ctx, path);
+        CGContextFillPath(ctx);
+    }
+}
+
 
 #pragma mark Titles
 - (void)drawValuesText:(CGContextRef)ctx sumValues:(float)sum
